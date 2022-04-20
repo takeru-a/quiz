@@ -32,7 +32,6 @@ def drawFingertip(image, landmarks):
     for i in range(len(landmark_point)):
         #サークルを描画
         cv2.circle(image, (landmark_point[i][0], landmark_point[i][1]), 7, (0, 0, 255), -1)
-    
 def main():
     # For webcam input:
     global device

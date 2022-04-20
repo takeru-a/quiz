@@ -36,7 +36,6 @@ def combi(img, cnt):
     dwhite = white
     #ワニがある部分(位置)をカメラ画像から切り抜き、ワニの画像を貼り付ける
     img[dwhite!=[255, 255, 255]] = dwhite[dwhite!=[255, 255, 255]]
-
     return img
 
 
