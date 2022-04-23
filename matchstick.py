@@ -15,11 +15,14 @@ matchstick_points = [None] * N
 #表示するマッチ棒の選択
 init_box = [1] * N
 offflags = [3,7,10,15,17]
+
 for n in offflags:
     init_box[n] = 0
 matchstick = init_box 
 #前の座標
 prepoint = None
+#つまんでいるかどうかのフラグ
+pinch_flag = False
 
 
 def getFrameNumber(start:float, fps:int):
@@ -112,9 +115,8 @@ def combi(img):
 
 #つまんでいるかどうかの判定
 def pinch(img, point):
-    global matchstick, moving, prepoint
-    #つまんでいるかどうかのフラグ
-    flag = False
+    global matchstick, moving, prepoint,pinch_flag
+    
     #つまんだ座標
     points = [(point[0][0]+point[1][0])//2,(point[0][1]+point[1][1])//2]
     #つまんでいると判断される場合
@@ -130,7 +132,7 @@ def pinch(img, point):
                         matchstick[i] = 0
                         # print(i)
                         moving = True
-                        flag = True
+                        pinch_flag = True
     #マッチ棒をとり、指を離した場合
     elif moving == True:
         for i, matchstick_point in enumerate(matchstick_points):
@@ -140,8 +142,9 @@ def pinch(img, point):
                         matchstick[i] = 1
                         # print(i)
                         moving = False
+                        pinch_flag = False
     prepoint = points    
-    return flag
+    return pinch_flag
 
 #問題の正解と同じ配置になっているかの判定を行う
 def correct():
