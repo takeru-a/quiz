@@ -13,26 +13,37 @@ def combi(img, cnt):
     #ワニの写真を変数に格納
     wimg  = cv2.imread('./imgs/wani.jpg')
     #サイズの変更
-    wimg = cv2.resize(wimg, dsize=None, fx=0.5, fy=0.2)
+    wimg = cv2.resize(wimg, dsize=None, fx=0.20, fy=0.20)
 
     white = np.ones((img.shape), dtype=np.uint8) * 255 #カメラ画像と同じサイズの白画像
 
+    wimg2 = wimg
+    wimg3 = wimg
+    wimg4 = wimg
+
+    #x始点
     x = 0
+    #y終点
     y = img.shape[0]-wimg.shape[0]
+    #x終点
     xd = wimg.shape[1]
 
     #2匹のワニの位置の更新
-    for i in range(2):
-        cnt[i] = cnt[i]%(img.shape[1]-wimg.shape[1])
+    # for i in range(3):
+    #     cnt[i] = cnt[i]%(img.shape[1]-wimg.shape[1])
 
     #white[y_start:y_end,x_start:x_end] = wimg
     #y_end - y_start == wimg.shape[0]
     #x_end - x_start == wimg.shape[1]
-    white[y:img.shape[0],x+cnt[0]:xd+cnt[0]] = wimg
+    white[y:img.shape[0],0:xd] = wimg
+    white[0:wimg2.shape[0],0:xd] = wimg2
+    white[0:wimg3.shape[0],400:xd+400] = wimg3
+    white[y:img.shape[0],400:xd+400] = wimg4
 
 
     #カメラ画像にワニの画像を貼り付ける
     dwhite = white
+
     #ワニがある部分(位置)をカメラ画像から切り抜き、ワニの画像を貼り付ける
     img[dwhite!=[255, 255, 255]] = dwhite[dwhite!=[255, 255, 255]]
     return img
@@ -102,7 +113,7 @@ def main():
                 continue
 
             #画像の座標
-            cnt = [248, 453, 0]
+            cnt = [0, 0, 0]
             combi(frame, cnt)
 
 

@@ -221,7 +221,7 @@ def main():
             results = hands.process(frame)
             frame.flags.writeable = True
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-           
+    
             combi(frame)
             if results.multi_hand_landmarks:
                 for hand_landmarks in results.multi_hand_landmarks:
