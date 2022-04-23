@@ -30,7 +30,8 @@ def combi(img, cnt):
     #y_end - y_start == wimg.shape[0]
     #x_end - x_start == wimg.shape[1]
     white[y:img.shape[0],x+cnt[0]:xd+cnt[0]] = wimg
-    white[0:wimg2.shape[0],x+cnt[1]:xd+cnt[1]] = wimg2
+    white[0:wimg2.shape[0],0:xd] = wimg2
+    #(0,0)->(xd,wh)
 
     #カメラ画像にワニの画像を貼り付ける
     dwhite = white
