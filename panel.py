@@ -1,8 +1,5 @@
-from asyncio import set_event_loop_policy
-from tkinter import image_names
+import random
 import cv2
-from matplotlib import offsetbox
-from matplotlib.pyplot import box
 import mediapipe as mp
 import time
 import numpy as np
@@ -31,9 +28,12 @@ def set_up(onbox):
     for n in onbox:
         init_box[n] = 1
     return init_box 
-onbox = [0, 3, 6, 9, 11, 14]
+onbox = [0, 3, 7, 6, 9, 14]
 panels = set_up(onbox)
 
+pinch_list = [i for i in range (N*N) if i not in onbox]
+random.shuffle(pinch_list)
+pinch_item = None
 
 def getFrameNumber(start:float, fps:int):
     now = time.perf_counter() - start
@@ -83,7 +83,9 @@ def dataset():
 def combi(img):
     global panels, pinches, panel_points, pinch_points
     imgs = dataset()
+    problem = cv2.imread('./imgs/problem.jpg')
     white = np.ones((img.shape), dtype=np.uint8) * 255 #カメラ画像と同じサイズの白画像
+    white[0:problem.shape[0], img.shape[1]-problem.shape[1]:img.shape[1]] = problem
     #文字の配置 
     #左上
     firstpoint = (300,100)
@@ -97,7 +99,6 @@ def combi(img):
         if panels[i] == 1:
             white[y:y+imgs[i].shape[0],x:x+imgs[i].shape[1]] = imgs[i]
     secondpoint = (250, 500)
-    pinch_list = [i for i in range (N*N) if i not in onbox]
     pinch_images = []
     for pimg in pinch_list:
         pinch_images.append(imgs[pimg])
@@ -118,7 +119,7 @@ def combi(img):
 
 #つまんでいるかどうかの判定
 def pinch(img, point):
-    global panels, moving, prepoint,pinch_flag, pinches
+    global panels, moving, prepoint,pinch_flag, pinches, pinch_item
     
     #つまんだ座標
     points = [(point[0][0]+point[1][0])//2,(point[0][1]+point[1][1])//2]
@@ -130,9 +131,10 @@ def pinch(img, point):
         for i, panel_point in enumerate(pinch_points):
             if moving==False and panel_point[0] <= points[0] <= panel_point[2]:
                 if panel_point[1] <= points[1] <= panel_point[3]:
-                    if  pinches != 0:
+                    if  pinches[i] != 0:
                         pinches[i] = 0
                         # print(i)
+                        pinch_item = pinch_list[i]
                         moving = True
                         pinch_flag = True
     #マッチ棒をとり、指を離した場合
@@ -140,7 +142,7 @@ def pinch(img, point):
         for i, panel_point in enumerate(panel_points):
             if panel_point[0] <= prepoint[0] <= panel_point[2]:
                 if panel_point[1] <= prepoint[1] <= panel_point[3]:
-                    if panels[i] != 1:
+                    if panels[i] != 1 and pinch_item == i:
                         panels[i] = 1
                         # print(i)
                         moving = False
@@ -150,14 +152,17 @@ def pinch(img, point):
 
 #問題の正解と同じ配置になっているかの判定を行う
 def correct():
-    pass
+    flag = False
+    correctbox = (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+    if correctbox == tuple(panels):
+        flag = True
+    return flag
 #マッチ棒を移動させる
 def move(img, landmarks):
     global panels
     image_width, image_height = img.shape[1], img.shape[0]
     landmark_point = []
-    mimg  = cv2.imread('./imgs/u.jpg')
-    mimg = cv2.resize(mimg, dsize=(70,70))
+    mimg = dataset()
     white = np.ones((img.shape), dtype=np.uint8) * 255
 
     for index, landmark in enumerate(landmarks.landmark):
@@ -171,21 +176,21 @@ def move(img, landmarks):
 
         landmark_point.append([landmark_x, landmark_y, landmark_z])
 
-    x = mimg.shape[1]//2
-    y = mimg.shape[0]//2
+    x = mimg[0].shape[1]//2
+    y = mimg[0].shape[0]//2
     point = [landmark_point[4],landmark_point[8]]
     flag = pinch(img,point)
     #つかんでいるマッチ棒の表示
     if flag:
         if landmark_point[8][1] >= y and landmark_point[8][1]<=img.shape[0]-y:
             if landmark_point[8][0] >= x and landmark_point[8][0]<=img.shape[1]-x:
-                white[landmark_point[8][1]-y:landmark_point[8][1]+y,landmark_point[8][0]-x:landmark_point[8][0]+x] = mimg
+                white[landmark_point[8][1]-y:landmark_point[8][1]+y,landmark_point[8][0]-x:landmark_point[8][0]+x] = mimg[pinch_item]
                 dwhite = white
                 img[dwhite!=[255, 255, 255]] = dwhite[dwhite!=[255, 255, 255]]
 
     #正解に合わせてメッセージを表示
-     #if correct():
-      #  cv2.putText(img, "Great!", (20,80), cv2.FONT_HERSHEY_SIMPLEX, 2, (255,0,0), 2)
+    if correct():
+        cv2.putText(img, "Clear!", (200,80), cv2.FONT_HERSHEY_SIMPLEX, 3, (255,0,0), 3)
 
 
 def main():
