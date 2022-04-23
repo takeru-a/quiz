@@ -9,11 +9,11 @@ mp_hands = mp.solutions.hands
 device = 0 # カメラのデバイス番号
 
 #カメラ画像とイラストの合成
-def combi(img, cnt):
+def combi(img):
     #ワニの写真を変数に格納
-    wimg  = cv2.imread('./imgs/wani.jpg')
+    wimg  = cv2.imread('./imgs/four_choice/hackathon_quiz_a1.jpg')
     #サイズの変更
-    wimg = cv2.resize(wimg, dsize=None, fx=0.20, fy=0.20)
+    wimg = cv2.resize(wimg, dsize=None, fx=0.8, fy=0.8)
 
     white = np.ones((img.shape), dtype=np.uint8) * 255 #カメラ画像と同じサイズの白画像
 
@@ -77,8 +77,8 @@ def drawFingertip(image, landmarks):
         # cv2.circle(image, (landmark_point[i][0], landmark_point[i][1]), 7, (0, 0, 255), -1)
 
 
-    if landmark_point[8][0] > 248 and  landmark_point[8][0] < image_width - 1 :
-        print('hit')
+    # if landmark_point[8][0] > 248 and  landmark_point[8][0] < image_width - 1 :
+    #             cv2.putText(img, "Great!", (20,80), cv2.FONT_HERSHEY_SIMPLEX, 2, (255,0,0), 2)
 
 def main():
     # For webcam input:
@@ -112,10 +112,6 @@ def main():
                 print("Ignoring empty camera frame.")
                 continue
 
-            #画像の座標
-            cnt = [0, 0, 0]
-            combi(frame, cnt)
-
 
             #反転処理
             frame = cv2.cvtColor(cv2.flip(frame, 1), cv2.COLOR_BGR2RGB)
@@ -123,6 +119,10 @@ def main():
             results = hands.process(frame)
             frame.flags.writeable = True
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+
+            combi(frame)
+            cv2.putText(frame, "True!", (20,80), cv2.FONT_HERSHEY_SIMPLEX, 2, (255,0,0), 2)
+            cv2.putText(frame, "False!", (200,200), cv2.FONT_HERSHEY_SIMPLEX, 2, (255,20,234), 2)
 
             if results.multi_hand_landmarks:
                 for hand_landmarks in results.multi_hand_landmarks:
